@@ -1,0 +1,616 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+
+<meta name="author" content="Michael Hahsler" />
+
+
+<title>stream: Working With Data Streams using Connections and Web Services</title>
+
+<script>// Pandoc 2.9 adds attributes on both header and div. We remove the former (to
+// be compatible with the behavior of Pandoc < 2.8).
+document.addEventListener('DOMContentLoaded', function(e) {
+  var hs = document.querySelectorAll("div.section[class*='level'] > :first-child");
+  var i, h, a;
+  for (i = 0; i < hs.length; i++) {
+    h = hs[i];
+    if (!/^h[1-6]$/i.test(h.tagName)) continue;  // it should be a header h1-h6
+    a = h.attributes;
+    while (a.length > 0) h.removeAttribute(a[0].name);
+  }
+});
+</script>
+<script>// Hide empty <a> tag within highlighted CodeBlock for screen reader accessibility (see https://github.com/jgm/pandoc/issues/6352#issuecomment-626106786) -->
+// v0.0.1
+// Written by JooYoung Seo (jooyoung@psu.edu) and Atsushi Yasumoto on June 1st, 2020.
+
+document.addEventListener('DOMContentLoaded', function() {
+  const codeList = document.getElementsByClassName("sourceCode");
+  for (var i = 0; i < codeList.length; i++) {
+    var linkList = codeList[i].getElementsByTagName('a');
+    for (var j = 0; j < linkList.length; j++) {
+      if (linkList[j].innerHTML === "") {
+        linkList[j].setAttribute('aria-hidden', 'true');
+      }
+    }
+  }
+});
+</script>
+
+<style type="text/css">
+  code{white-space: pre-wrap;}
+  span.smallcaps{font-variant: small-caps;}
+  span.underline{text-decoration: underline;}
+  div.column{display: inline-block; vertical-align: top; width: 50%;}
+  div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+  ul.task-list{list-style: none;}
+    </style>
+
+
+
+<style type="text/css">
+  code {
+    white-space: pre;
+  }
+  .sourceCode {
+    overflow: visible;
+  }
+</style>
+<style type="text/css" data-origin="pandoc">
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+    color: #aaaaaa;
+  }
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code span.at { color: #7d9029; } /* Attribute */
+code span.bn { color: #40a070; } /* BaseN */
+code span.bu { } /* BuiltIn */
+code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code span.ch { color: #4070a0; } /* Char */
+code span.cn { color: #880000; } /* Constant */
+code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code span.dt { color: #902000; } /* DataType */
+code span.dv { color: #40a070; } /* DecVal */
+code span.er { color: #ff0000; font-weight: bold; } /* Error */
+code span.ex { } /* Extension */
+code span.fl { color: #40a070; } /* Float */
+code span.fu { color: #06287e; } /* Function */
+code span.im { } /* Import */
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code span.op { color: #666666; } /* Operator */
+code span.ot { color: #007020; } /* Other */
+code span.pp { color: #bc7a00; } /* Preprocessor */
+code span.sc { color: #4070a0; } /* SpecialChar */
+code span.ss { color: #bb6688; } /* SpecialString */
+code span.st { color: #4070a0; } /* String */
+code span.va { color: #19177c; } /* Variable */
+code span.vs { color: #4070a0; } /* VerbatimString */
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+
+</style>
+<script>
+// apply pandoc div.sourceCode style to pre.sourceCode instead
+(function() {
+  var sheets = document.styleSheets;
+  for (var i = 0; i < sheets.length; i++) {
+    if (sheets[i].ownerNode.dataset["origin"] !== "pandoc") continue;
+    try { var rules = sheets[i].cssRules; } catch (e) { continue; }
+    var j = 0;
+    while (j < rules.length) {
+      var rule = rules[j];
+      // check if there is a div.sourceCode rule
+      if (rule.type !== rule.STYLE_RULE || rule.selectorText !== "div.sourceCode") {
+        j++;
+        continue;
+      }
+      var style = rule.style.cssText;
+      // check if color or background-color is set
+      if (rule.style.color === '' && rule.style.backgroundColor === '') {
+        j++;
+        continue;
+      }
+      // replace div.sourceCode by a pre.sourceCode rule
+      sheets[i].deleteRule(j);
+      sheets[i].insertRule('pre.sourceCode{' + style + '}', j);
+    }
+  }
+})();
+</script>
+
+
+
+
+<style type="text/css">body {
+background-color: #fff;
+margin: 1em auto;
+max-width: 700px;
+overflow: visible;
+padding-left: 2em;
+padding-right: 2em;
+font-family: "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
+font-size: 14px;
+line-height: 1.35;
+}
+#TOC {
+clear: both;
+margin: 0 0 10px 10px;
+padding: 4px;
+width: 400px;
+border: 1px solid #CCCCCC;
+border-radius: 5px;
+background-color: #f6f6f6;
+font-size: 13px;
+line-height: 1.3;
+}
+#TOC .toctitle {
+font-weight: bold;
+font-size: 15px;
+margin-left: 5px;
+}
+#TOC ul {
+padding-left: 40px;
+margin-left: -1.5em;
+margin-top: 5px;
+margin-bottom: 5px;
+}
+#TOC ul ul {
+margin-left: -2em;
+}
+#TOC li {
+line-height: 16px;
+}
+table {
+margin: 1em auto;
+border-width: 1px;
+border-color: #DDDDDD;
+border-style: outset;
+border-collapse: collapse;
+}
+table th {
+border-width: 2px;
+padding: 5px;
+border-style: inset;
+}
+table td {
+border-width: 1px;
+border-style: inset;
+line-height: 18px;
+padding: 5px 5px;
+}
+table, table th, table td {
+border-left-style: none;
+border-right-style: none;
+}
+table thead, table tr.even {
+background-color: #f7f7f7;
+}
+p {
+margin: 0.5em 0;
+}
+blockquote {
+background-color: #f6f6f6;
+padding: 0.25em 0.75em;
+}
+hr {
+border-style: solid;
+border: none;
+border-top: 1px solid #777;
+margin: 28px 0;
+}
+dl {
+margin-left: 0;
+}
+dl dd {
+margin-bottom: 13px;
+margin-left: 13px;
+}
+dl dt {
+font-weight: bold;
+}
+ul {
+margin-top: 0;
+}
+ul li {
+list-style: circle outside;
+}
+ul ul {
+margin-bottom: 0;
+}
+pre, code {
+background-color: #f7f7f7;
+border-radius: 3px;
+color: #333;
+white-space: pre-wrap; 
+}
+pre {
+border-radius: 3px;
+margin: 5px 0px 10px 0px;
+padding: 10px;
+}
+pre:not([class]) {
+background-color: #f7f7f7;
+}
+code {
+font-family: Consolas, Monaco, 'Courier New', monospace;
+font-size: 85%;
+}
+p > code, li > code {
+padding: 2px 0px;
+}
+div.figure {
+text-align: center;
+}
+img {
+background-color: #FFFFFF;
+padding: 2px;
+border: 1px solid #DDDDDD;
+border-radius: 3px;
+border: 1px solid #CCCCCC;
+margin: 0 5px;
+}
+h1 {
+margin-top: 0;
+font-size: 35px;
+line-height: 40px;
+}
+h2 {
+border-bottom: 4px solid #f7f7f7;
+padding-top: 10px;
+padding-bottom: 2px;
+font-size: 145%;
+}
+h3 {
+border-bottom: 2px solid #f7f7f7;
+padding-top: 10px;
+font-size: 120%;
+}
+h4 {
+border-bottom: 1px solid #f7f7f7;
+margin-left: 8px;
+font-size: 105%;
+}
+h5, h6 {
+border-bottom: 1px solid #ccc;
+font-size: 105%;
+}
+a {
+color: #0033dd;
+text-decoration: none;
+}
+a:hover {
+color: #6666ff; }
+a:visited {
+color: #800080; }
+a:visited:hover {
+color: #BB00BB; }
+a[href^="http:"] {
+text-decoration: underline; }
+a[href^="https:"] {
+text-decoration: underline; }
+
+code > span.kw { color: #555; font-weight: bold; } 
+code > span.dt { color: #902000; } 
+code > span.dv { color: #40a070; } 
+code > span.bn { color: #d14; } 
+code > span.fl { color: #d14; } 
+code > span.ch { color: #d14; } 
+code > span.st { color: #d14; } 
+code > span.co { color: #888888; font-style: italic; } 
+code > span.ot { color: #007020; } 
+code > span.al { color: #ff0000; font-weight: bold; } 
+code > span.fu { color: #900; font-weight: bold; } 
+code > span.er { color: #a61717; background-color: #e3d2d2; } 
+</style>
+
+
+
+
+</head>
+
+<body>
+
+
+
+
+<h1 class="title toc-ignore">stream: Working With Data Streams using Connections and Web Services</h1>
+<h4 class="author">Michael Hahsler</h4>
+
+
+
+<div id="introduction" class="section level1">
+<h1>Introduction</h1>
+<p>Data streams are often processed in a distributed manner using multiple machines or multiple processes. For example, a data stream may be produced by a sensor attached to a remote machine or multiple clustering algorithms run in parallel using several R processes. Another application is to connect to other software components in a stream mining pipeline.</p>
+<p>First, we show how socket connections together with the package <code>stream</code> can be used to connect multiple processes or machines.</p>
+<p>Then we give examples of how package <code>streamConnect</code> makes connecting stream mining components more convenient by providing an interface to connect stream processing using <em>sockets</em> or <em>web services</em>. While sockets are only used to connect data steam generating processes, web services are more versatile and can also be used to create data stream clustering processes as a service.</p>
+<p>The last section of this paper shows how to deploy the server/web service.</p>
+<p>For the examples below, we will use a random available port.</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true"></a>port &lt;-<span class="st"> </span>httpuv<span class="op">::</span><span class="kw">randomPort</span>()</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true"></a>port</span></code></pre></div>
+<pre><code>## [1] 9275</code></pre>
+</div>
+<div id="using-sockets-directly-to-publish-a-data-stream" class="section level1">
+<h1>Using Sockets Directly to Publish a Data Stream</h1>
+<p>The functions <code>write_stream()</code> and the class <code>DSD_ReadStream</code> provided in package <code>stream</code> can be used for communicate via connections (files, sockets, URLs, etc.). In the first example, we manually set up the connection. The example is useful to understand how sockets work especially for users interested in implementing their own components using other programming languages or connecting with other data stream software.</p>
+<p>A more convenient way to do this using package <code>streamConnect</code> is described later in this paper.</p>
+<div id="server-serving-a-data-stream" class="section level2">
+<h2>Server: Serving a Data Stream</h2>
+<p>The server served data from a data stream. We use library <code>callr</code> to create a separate R process that serves a data stream creating 10 points every second using a socket connection, but you can also put the code in function <code>r_bg()</code> in a file called <code>server.R</code> and run (potentially on a different machine) it with <code>R CMD BATCH server.R</code> from the command line.</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true"></a><span class="kw">library</span>(stream)</span></code></pre></div>
+<pre><code>## Loading required package: magrittr</code></pre>
+<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true"></a><span class="kw">library</span>(callr)</span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true"></a></span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true"></a>rp1 &lt;-<span class="st"> </span><span class="kw">r_bg</span>(<span class="cf">function</span>(port) {</span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true"></a>  <span class="kw">library</span>(stream)</span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true"></a>  stream &lt;-<span class="st"> </span><span class="kw">DSD_Gaussians</span>(<span class="dt">k =</span> <span class="dv">3</span>, <span class="dt">d =</span> <span class="dv">3</span>)</span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true"></a>  blocksize &lt;-<span class="st"> </span><span class="dv">10</span></span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true"></a></span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true"></a>  con &lt;-<span class="st"> </span><span class="kw">socketConnection</span>(<span class="dt">port =</span> port, <span class="dt">server =</span> <span class="ot">TRUE</span>)</span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true"></a>  </span>
+<span id="cb5-10"><a href="#cb5-10" aria-hidden="true"></a>  <span class="cf">while</span> (<span class="ot">TRUE</span>) {</span>
+<span id="cb5-11"><a href="#cb5-11" aria-hidden="true"></a>    <span class="kw">write_stream</span>(stream, con, <span class="dt">n =</span> blocksize, <span class="dt">close =</span> <span class="ot">FALSE</span>)</span>
+<span id="cb5-12"><a href="#cb5-12" aria-hidden="true"></a>    <span class="kw">Sys.sleep</span>(<span class="dv">1</span>)</span>
+<span id="cb5-13"><a href="#cb5-13" aria-hidden="true"></a>  }</span>
+<span id="cb5-14"><a href="#cb5-14" aria-hidden="true"></a>  </span>
+<span id="cb5-15"><a href="#cb5-15" aria-hidden="true"></a>  <span class="kw">close</span>(con)</span>
+<span id="cb5-16"><a href="#cb5-16" aria-hidden="true"></a>}, </span>
+<span id="cb5-17"><a href="#cb5-17" aria-hidden="true"></a>  <span class="dt">args =</span> <span class="kw">list</span>(<span class="dt">port =</span> port))</span>
+<span id="cb5-18"><a href="#cb5-18" aria-hidden="true"></a></span>
+<span id="cb5-19"><a href="#cb5-19" aria-hidden="true"></a>rp1</span></code></pre></div>
+<pre><code>## PROCESS &#39;R&#39;, running, pid 61787.</code></pre>
+<div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true"></a><span class="kw">Sys.sleep</span>(<span class="dv">1</span>) <span class="co"># wait for the socket to establish</span></span></code></pre></div>
+</div>
+<div id="client-reading-from-the-stream" class="section level2">
+<h2>Client: Reading from the Stream</h2>
+<p>The client consumes the data stream. We open the connection which starts the data generating process and then poll all available data (<code>n = -1</code>) several times. The first request should yield 10 points, the second none and the third request should yield 20 points (2 seconds).</p>
+<div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true"></a><span class="kw">library</span>(stream)</span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true"></a></span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true"></a>con &lt;-<span class="st"> </span><span class="kw">socketConnection</span>(<span class="dt">port =</span> port, <span class="dt">open =</span> <span class="st">&#39;r&#39;</span>)</span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true"></a>con</span></code></pre></div>
+<pre><code>## A connection with                              
+## description &quot;-&gt;localhost:9275&quot;
+## class       &quot;sockconn&quot;        
+## mode        &quot;r&quot;               
+## text        &quot;text&quot;            
+## opened      &quot;opened&quot;          
+## can read    &quot;yes&quot;             
+## can write   &quot;yes&quot;</code></pre>
+<div class="sourceCode" id="cb10"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true"></a><span class="kw">Sys.sleep</span>(<span class="dv">1</span>) <span class="co"># wait for the socket to establish</span></span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true"></a></span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true"></a>dsd &lt;-<span class="st"> </span><span class="kw">DSD_ReadStream</span>(con)</span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true"></a></span>
+<span id="cb10-5"><a href="#cb10-5" aria-hidden="true"></a><span class="kw">get_points</span>(dsd, <span class="dt">n=</span> <span class="dv">-1</span>)</span></code></pre></div>
+<pre><code>##           V1          V2        V3
+## 1  0.9047997  0.52186379 0.8044719
+## 2  0.9050244  0.41133225 0.8632416
+## 3  0.4329269 -0.02751129 0.2450066
+## 4  0.4248826  0.03066694 0.2567322
+## 5  0.5164283 -0.01551262 0.3242230
+## 6  0.8728699  0.34272960 0.9187377
+## 7  0.9732045  0.45537605 0.5398918
+## 8  0.4370118  0.02743836 0.3350599
+## 9  0.4059312  0.04516246 0.2762548
+## 10 0.9195888  0.47762344 0.5571384
+## 11 0.9549011  0.51472257 0.7915742
+## 12 1.0505180  0.40592178 0.5436453
+## 13 0.9524608  0.40431083 0.5542186
+## 14 0.4690362 -0.02688353 0.2884523
+## 15 0.9052682  0.47235297 0.5417151
+## 16 0.4875795  0.06994513 0.2723085
+## 17 0.9820347  0.46710826 0.4692987
+## 18 0.8723740  0.47481997 0.8529258
+## 19 0.8783201  0.46657375 0.5114071
+## 20 0.9839075  0.44890884 0.4434689</code></pre>
+<div class="sourceCode" id="cb12"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true"></a><span class="kw">get_points</span>(dsd, <span class="dt">n=</span> <span class="dv">-1</span>)</span></code></pre></div>
+<pre><code>## [1] V1 V2 V3
+## &lt;0 rows&gt; (or 0-length row.names)</code></pre>
+<div class="sourceCode" id="cb14"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true"></a><span class="kw">Sys.sleep</span>(<span class="dv">2</span>)</span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true"></a><span class="kw">get_points</span>(dsd, <span class="dt">n=</span> <span class="dv">-1</span>)</span></code></pre></div>
+<pre><code>##           V1           V2        V3
+## 1  0.8826423  0.428505269 0.8469474
+## 2  0.5097568 -0.059866288 0.3016689
+## 3  0.9036892  0.488034415 0.5593271
+## 4  0.8516482  0.443432710 0.8168350
+## 5  0.4468856  0.058070923 0.2736163
+## 6  0.4285829 -0.009003735 0.3212047
+## 7  0.5338878  0.007341443 0.2301360
+## 8  0.9326579  0.456050486 0.5972693
+## 9  0.9407112  0.464927505 0.5263519
+## 10 1.0352548  0.408376150 0.6474200</code></pre>
+<div class="sourceCode" id="cb16"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true"></a><span class="kw">close</span>(con)</span></code></pre></div>
+</div>
+<div id="server-stoping-the-server-process" class="section level2">
+<h2>Server: Stoping the Server Process</h2>
+<p>Here we stop the <code>callr</code> process. Note that the socket connection is still active and will serve the data in the connection buffer as long as the reading process keeps the connection open.</p>
+<div class="sourceCode" id="cb17"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true"></a>rp1<span class="op">$</span><span class="kw">kill</span>()</span></code></pre></div>
+<pre><code>## [1] TRUE</code></pre>
+</div>
+</div>
+<div id="streamconnect-sockets" class="section level1">
+<h1>streamConnect Sockets</h1>
+<p><code>streamConnect</code> provides publish <code>DSD_via_Socket()</code> and the class <code>DSD_ReadSocket</code> to create a socked based connection. <code>DSD_via_Socket()</code> creates a socket broadcasting data using a socket and <code>DSD_ReadSocket</code> creates a <code>DSD</code> object reading from that socket.</p>
+<div id="server-publish-data" class="section level2">
+<h2>Server: Publish Data</h2>
+<p>We create a DSD process sending data to the port.</p>
+<div class="sourceCode" id="cb19"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true"></a><span class="kw">library</span>(streamConnect)</span>
+<span id="cb19-2"><a href="#cb19-2" aria-hidden="true"></a></span>
+<span id="cb19-3"><a href="#cb19-3" aria-hidden="true"></a>rp1 &lt;-<span class="st"> </span><span class="kw">DSD_Gaussians</span>(<span class="dt">k =</span> <span class="dv">3</span>, <span class="dt">d =</span> <span class="dv">3</span>) <span class="op">%&gt;%</span><span class="st"> </span><span class="kw">publish_DSD_via_Socket</span>(<span class="dt">port =</span> port)</span>
+<span id="cb19-4"><a href="#cb19-4" aria-hidden="true"></a>rp1</span></code></pre></div>
+<pre><code>## PROCESS &#39;R&#39;, running, pid 61845.</code></pre>
+<div class="sourceCode" id="cb21"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true"></a><span class="kw">Sys.sleep</span>(<span class="dv">1</span>)  <span class="co"># wait for the socket to become available</span></span></code></pre></div>
+</div>
+<div id="client-connect-to-the-data-stream" class="section level2">
+<h2>Client: Connect to the Data Stream</h2>
+<p>Next, we create a DSD that connects to the socket.</p>
+<div class="sourceCode" id="cb22"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true"></a><span class="kw">library</span>(streamConnect)</span>
+<span id="cb22-2"><a href="#cb22-2" aria-hidden="true"></a></span>
+<span id="cb22-3"><a href="#cb22-3" aria-hidden="true"></a>dsd &lt;-<span class="st"> </span><span class="kw">DSD_ReadSocket</span>(<span class="dt">port =</span> port, <span class="dt">col.names =</span> <span class="kw">c</span>(<span class="st">&quot;x&quot;</span>, <span class="st">&quot;y&quot;</span>, <span class="st">&quot;z&quot;</span>, <span class="st">&quot;.class&quot;</span>))</span>
+<span id="cb22-4"><a href="#cb22-4" aria-hidden="true"></a>dsd</span></code></pre></div>
+<pre><code>## Data Stream from Connection (d = 3, k = NA) 
+## Class: DSD_ReadStream, DSD_R, DSD 
+## connection: -&gt;localhost:9275 (opened)</code></pre>
+<div class="sourceCode" id="cb24"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true"></a><span class="kw">get_points</span>(dsd, <span class="dt">n =</span> <span class="dv">10</span>)</span></code></pre></div>
+<pre><code>##            x         y          z .class
+## 1  0.7567607 0.8319033 0.05513106      3
+## 2  0.9360300 0.1039441 0.40642467      2
+## 3  0.8364580 0.2234238 0.43907727      2
+## 4  0.7796039 0.8566099 0.08602838      3
+## 5  0.9389026 0.1361315 0.46070560      2
+## 6  0.2492437 0.3462209 0.74175057      1
+## 7  0.2794318 0.4106671 0.76771604      1
+## 8  0.9500622 0.1724914 0.40171971      2
+## 9  0.8426019 0.1895990 0.46195236      2
+## 10 0.7438122 0.8188341 0.04061998      3</code></pre>
+<div class="sourceCode" id="cb26"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true"></a><span class="kw">plot</span>(dsd)</span></code></pre></div>
+<p><img src="data:image/png;base64,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" /><!-- --></p>
+<div class="sourceCode" id="cb27"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true"></a><span class="kw">close_stream</span>(dsd)</span></code></pre></div>
+</div>
+<div id="server-stoping-the-server-process-1" class="section level2">
+<h2>Server: Stoping the Server Process</h2>
+<p>Closing the stream on the client also closes the connection which may already kill the serving process.</p>
+<div class="sourceCode" id="cb28"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true"></a><span class="cf">if</span> (rp1<span class="op">$</span><span class="kw">is_alive</span>()) rp1<span class="op">$</span><span class="kw">kill</span>()</span></code></pre></div>
+</div>
+</div>
+<div id="streamconnect-web-services" class="section level1">
+<h1>streamConnect Web Services</h1>
+<p>Web services are more versatile, they can be used to deploy data stream sources using <code>publish_DSD_via_WebService()</code>/<code>DSD_ReadWebservice</code> or data stream tasks using <code>publish_DSC_via_WebService()</code>/<code>DSC_WebService</code>. Here we only show how to deploy a clusterer, but a DSD can be published in a similar manner. Larger workflows can be created using <code>DST_Runner</code> from <code>stream</code>.</p>
+<p><code>streamConnect</code> uses the package <code>plumber</code> to manage web services. The data is transmitted in serialized form. The default serialization format it <code>csv</code> (comma separated values). Other formats are <code>json</code> and <code>rds</code> (see <code>plumber::serializer_csv</code>).</p>
+<div id="server-create-a-web-service" class="section level2">
+<h2>Server: Create a Web Service</h2>
+<p>Creating a clustering web service process listening for data on the port.</p>
+<div class="sourceCode" id="cb29"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb29-1"><a href="#cb29-1" aria-hidden="true"></a><span class="kw">library</span>(streamConnect)</span>
+<span id="cb29-2"><a href="#cb29-2" aria-hidden="true"></a></span>
+<span id="cb29-3"><a href="#cb29-3" aria-hidden="true"></a>rp1 &lt;-<span class="st"> </span><span class="kw">publish_DSC_via_WebService</span>(<span class="st">&quot;DSC_DBSTREAM(r = .05)&quot;</span>, <span class="dt">port =</span> port)</span>
+<span id="cb29-4"><a href="#cb29-4" aria-hidden="true"></a>rp1</span></code></pre></div>
+<pre><code>## PROCESS &#39;R&#39;, running, pid 61921.</code></pre>
+</div>
+<div id="client-connect-to-the-web-service" class="section level2">
+<h2>Client: Connect to the Web Service</h2>
+<p>Connect to the web service with a local DSC interface.</p>
+<div class="sourceCode" id="cb31"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb31-1"><a href="#cb31-1" aria-hidden="true"></a><span class="kw">library</span>(streamConnect)</span>
+<span id="cb31-2"><a href="#cb31-2" aria-hidden="true"></a></span>
+<span id="cb31-3"><a href="#cb31-3" aria-hidden="true"></a>dsc &lt;-<span class="st"> </span><span class="kw">DSC_WebService</span>(<span class="kw">paste0</span>(<span class="st">&quot;http://localhost&quot;</span>, <span class="st">&quot;:&quot;</span>, port), <span class="dt">quiet =</span> <span class="ot">FALSE</span>)</span></code></pre></div>
+<pre><code>## Error in curl::curl_fetch_memory(url, handle = handle): Failed to connect to localhost port 9275 after 0 ms: Connection refused
+## Request failed [ERROR]. Retrying in 1.7 seconds...</code></pre>
+<div class="sourceCode" id="cb33"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb33-1"><a href="#cb33-1" aria-hidden="true"></a>dsc</span></code></pre></div>
+<pre><code>## Web Service Data Stream Clusterer: DBSTREAM
+## Served from: http://localhost:9275 
+## Class: DSC_WebService, DSC_R, DSC 
+## Number of micro-clusters: 0 
+## Number of macro-clusters: 0</code></pre>
+<p>Cluster some data.</p>
+<div class="sourceCode" id="cb35"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb35-1"><a href="#cb35-1" aria-hidden="true"></a>dsd &lt;-<span class="st"> </span><span class="kw">DSD_Gaussians</span>(<span class="dt">k =</span> <span class="dv">3</span>, <span class="dt">d =</span> <span class="dv">2</span>, <span class="dt">noise =</span> <span class="fl">0.05</span>)</span>
+<span id="cb35-2"><a href="#cb35-2" aria-hidden="true"></a></span>
+<span id="cb35-3"><a href="#cb35-3" aria-hidden="true"></a><span class="kw">update</span>(dsc, dsd, <span class="dv">500</span>)</span>
+<span id="cb35-4"><a href="#cb35-4" aria-hidden="true"></a>dsc</span></code></pre></div>
+<pre><code>## Web Service Data Stream Clusterer: DBSTREAM
+## Served from: http://localhost:9275 
+## Class: DSC_WebService, DSC_R, DSC 
+## Number of micro-clusters: 18 
+## Number of macro-clusters: 3</code></pre>
+<div class="sourceCode" id="cb37"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb37-1"><a href="#cb37-1" aria-hidden="true"></a><span class="kw">get_centers</span>(dsc)</span></code></pre></div>
+<pre><code>## # A tibble: 18 × 2
+##        X1    X2
+##     &lt;dbl&gt; &lt;dbl&gt;
+##  1 0.495  0.203
+##  2 0.135  0.670
+##  3 0.0940 0.643
+##  4 0.0699 0.599
+##  5 0.548  0.227
+##  6 0.806  0.463
+##  7 0.531  0.171
+##  8 0.467  0.153
+##  9 0.0266 0.582
+## 10 0.767  0.435
+## 11 0.819  0.412
+## 12 0.748  0.393
+## 13 0.789  0.371
+## 14 0.840  0.494
+## 15 0.236  0.771
+## 16 0.605  0.270
+## 17 0.167  0.715
+## 18 0.886  0.494</code></pre>
+<div class="sourceCode" id="cb39"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb39-1"><a href="#cb39-1" aria-hidden="true"></a><span class="kw">get_weights</span>(dsc)</span></code></pre></div>
+<pre><code>##  [1] 59.784471 57.632239 72.168699 54.786610 59.068051 73.338511 66.109499
+##  [8] 25.806733 25.471136 82.406985 60.287946 39.230393 33.319079 19.059312
+## [15]  3.318702  4.355685 11.803871  6.558004</code></pre>
+<div class="sourceCode" id="cb41"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb41-1"><a href="#cb41-1" aria-hidden="true"></a><span class="kw">plot</span>(dsc)</span></code></pre></div>
+<p><img src="data:image/png;base64,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" /><!-- --></p>
+</div>
+<div id="server-stop-the-web-service" class="section level2">
+<h2>Server: Stop the Web Service</h2>
+<p>Kill the web service process.</p>
+<div class="sourceCode" id="cb42"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb42-1"><a href="#cb42-1" aria-hidden="true"></a>rp1<span class="op">$</span><span class="kw">kill</span>()</span></code></pre></div>
+<pre><code>## [1] TRUE</code></pre>
+</div>
+</div>
+<div id="deploying-the-serverweb-service" class="section level1">
+<h1>Deploying the Server/Web Service</h1>
+<p>Web services and the socket-based server can be easily deployed to any server or cloud system including containers. Make sure R and the package <code>streamConnect</code> and all dependencies are installed. Create a short R script to start the server/service and deploy it.</p>
+<div class="sourceCode" id="cb44"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb44-1"><a href="#cb44-1" aria-hidden="true"></a><span class="kw">library</span>(streamConnect)</span>
+<span id="cb44-2"><a href="#cb44-2" aria-hidden="true"></a>port =<span class="st"> </span><span class="dv">8001</span></span>
+<span id="cb44-3"><a href="#cb44-3" aria-hidden="true"></a></span>
+<span id="cb44-4"><a href="#cb44-4" aria-hidden="true"></a><span class="kw">publish_DSC_via_WebService</span>(<span class="st">&quot;DSC_DBSTREAM(r = .05)&quot;</span>, <span class="dt">port =</span> port, </span>
+<span id="cb44-5"><a href="#cb44-5" aria-hidden="true"></a>                           <span class="dt">background =</span> <span class="ot">FALSE</span>)</span></code></pre></div>
+<p>Web services can also be deployed using a plumber task file. The following call returns the name of the task file.</p>
+<div class="sourceCode" id="cb45"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb45-1"><a href="#cb45-1" aria-hidden="true"></a><span class="kw">publish_DSC_via_WebService</span>(<span class="st">&quot;DSC_DBSTREAM(r = .05)&quot;</span>, <span class="dt">serve =</span> <span class="ot">FALSE</span>)</span></code></pre></div>
+<p>Open the file in R studio to deploy it or read the <a href="https://www.rplumber.io/articles/hosting.html">plumber Hosting vignette</a>.</p>
+</div>
+
+
+
+<!-- code folding -->
+
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>
