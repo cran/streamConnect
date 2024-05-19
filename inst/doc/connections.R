@@ -27,18 +27,15 @@ rp1 <- r_bg(function(port) {
 
 rp1
 
-Sys.sleep(1) # wait for the socket to establish
-
 ## ----eval = TRUE--------------------------------------------------------------
-library(stream)
+library(streamConnect)
 
-con <- socketConnection(port = port, open = 'r')
+con <- retry(socketConnection(port = port, open = 'r'))
 con
 
-Sys.sleep(1) # wait for the socket to establish
+dsd <- retry(DSD_ReadStream(con))
 
-dsd <- DSD_ReadStream(con)
-
+## ----eval = TRUE--------------------------------------------------------------
 get_points(dsd, n= -1)
 get_points(dsd, n= -1)
 
@@ -61,7 +58,7 @@ Sys.sleep(1)  # wait for the socket to become available
 ## ----eval = TRUE--------------------------------------------------------------
 library(streamConnect)
 
-dsd <- DSD_ReadSocket(port = port, col.names = c("x", "y", "z", ".class"))
+dsd <- retry(DSD_ReadSocket(port = port, col.names = c("x", "y", "z", ".class")))
 dsd
 
 get_points(dsd, n = 10)
