@@ -28,12 +28,10 @@ rp1 <- r_bg(function(port) {
 rp1
 
 ## ----eval = TRUE--------------------------------------------------------------
-library(streamConnect)
-
-con <- retry(socketConnection(port = port, open = 'r'))
+con <- streamConnect::retry(socketConnection(port = port, open = 'r'))
 con
 
-dsd <- retry(DSD_ReadStream(con))
+dsd <- streamConnect::retry(DSD_ReadStream(con))
 
 ## ----eval = TRUE--------------------------------------------------------------
 get_points(dsd, n= -1)
@@ -53,12 +51,10 @@ library(streamConnect)
 rp1 <- DSD_Gaussians(k = 3, d = 3) %>% publish_DSD_via_Socket(port = port)
 rp1
 
-Sys.sleep(1)  # wait for the socket to become available
-
 ## ----eval = TRUE--------------------------------------------------------------
 library(streamConnect)
 
-dsd <- retry(DSD_ReadSocket(port = port, col.names = c("x", "y", "z", ".class")))
+dsd <- DSD_ReadSocket(port = port, col.names = c("x", "y", "z", ".class"))
 dsd
 
 get_points(dsd, n = 10)
@@ -75,10 +71,14 @@ library(streamConnect)
 rp1 <- publish_DSC_via_WebService("DSC_DBSTREAM(r = .05)", port = port)
 rp1
 
+## ----echo=FALSE---------------------------------------------------------------
+# sleep in case the WebService is not up fast enough. Maybe this make the CRAN checker happy. 
+Sys.sleep(1)
+
 ## ----eval = TRUE--------------------------------------------------------------
 library(streamConnect)
 
-dsc <- DSC_WebService(paste0("http://localhost", ":", port), quiet = FALSE)
+dsc <- DSC_WebService(paste0("http://localhost", ":", port), verbose = TRUE)
 dsc
 
 ## ----eval = TRUE--------------------------------------------------------------
