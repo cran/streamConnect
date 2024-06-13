@@ -71,14 +71,11 @@ library(streamConnect)
 rp1 <- publish_DSC_via_WebService("DSC_DBSTREAM(r = .05)", port = port)
 rp1
 
-## ----echo=FALSE---------------------------------------------------------------
-# sleep in case the WebService is not up fast enough. Maybe this make the CRAN checker happy. 
-Sys.sleep(1)
-
 ## ----eval = TRUE--------------------------------------------------------------
 library(streamConnect)
 
-dsc <- DSC_WebService(paste0("http://localhost", ":", port), verbose = TRUE)
+dsc <- DSC_WebService(paste0("http://localhost", ":", port), 
+                      verbose = TRUE, config = httr::verbose(info = TRUE))
 dsc
 
 ## ----eval = TRUE--------------------------------------------------------------

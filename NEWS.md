@@ -1,6 +1,10 @@
-# arules 0.0-3 (06/10/2024)
+# arules 0.0-4 (06/13/2024)
 
 ## Changes
+* Added support to get verbose output from curl.
+
+# arules 0.0-3 (06/10/2024)
+
 * Added processx to suggested packages (is used by plumber and we 
   have it in the man page).
 * Improved retry code.
