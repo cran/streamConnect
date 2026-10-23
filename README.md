@@ -1,30 +1,33 @@
 
 # <img src="man/figures/logo.svg" align="right" height="139" /> R package streamConnect - Connecting Stream Mining Components Using Sockets and Web Services
 
-[![r-universe
-status](https://mhahsler.r-universe.dev/badges/streamConnect)](https://mhahsler.r-universe.dev/streamConnect)
 [![Package on
-CRAN](http://www.r-pkg.org/badges/version/streamConnect)](https://CRAN.R-project.org/package=streamConnect)
+CRAN](https://www.r-pkg.org/badges/version/streamConnect)](https://CRAN.R-project.org/package=streamConnect)
 [![CRAN RStudio mirror
-downloads](http://cranlogs.r-pkg.org/badges/streamConnect)](https://CRAN.R-project.org/package=streamConnect)
+downloads](https://cranlogs.r-pkg.org/badges/streamConnect)](https://CRAN.R-project.org/package=streamConnect)
+![License](https://img.shields.io/cran/l/streamConnect) [![r-universe
+status](https://mhahsler.r-universe.dev/badges/streamConnect)](https://mhahsler.r-universe.dev/streamConnect)
+
+**Maintainer:** [Michael Hahsler](https://michael.hahsler.net)
 
 The R package is part of the
-[stream](https://github.com/mhahsler/stream) ecosystem. It adds
-functionality to connect stream mining components from package stream
-using sockets and Web services. The package can be used create
-distributed workflows and create plumber-based Web services which can be
+[stream](https://michael.hahsler.net/stream/) ecosystem. It adds
+functionality to connect stream mining components from the `stream`
+package using sockets and Web services. The package can be used to
+create distributed workflows and plumber-based Web services that can be
 deployed on most common cloud services.
 
 To cite package ‘streamConnect’ in publications use:
 
-> Hahsler M (2024). *streamConnect: Connecting Stream Mining Components
-> Using Sockets and Web Services*. R package version 0.0-3.
+> Hahsler M (????). *streamConnect: Connecting Stream Mining Components
+> Using Sockets and Web Services*. R package version 0.0.7,
+> <http://michael.hahsler.net/streamConnect/>.
 
     @Manual{,
       title = {streamConnect: Connecting Stream Mining Components Using Sockets and Web Services},
       author = {Michael Hahsler},
-      year = {2024},
-      note = {R package version 0.0-3},
+      note = {R package version 0.0.7},
+      url = {http://michael.hahsler.net/streamConnect/},
     }
 
 ## Installation
@@ -40,14 +43,15 @@ install.packages("streamConnect")
 
 ``` r
 install.packages("streamConnect",
-    repos = c("https://mhahsler.r-universe.dev". "https://cloud.r-project.org/"))
+    repos = c("https://mhahsler.r-universe.dev",
+              "https://cloud.r-project.org/"))
 ```
 
 ## Examples
 
-See [stream: Working With Data Streams using Connections and Web
-Services](https://CRAN.R-project.org/package=streamConnect/vignettes/connections.html)
-for examples.
+See the [Getting Started with
+streamConnect](https://michael.hahsler.net/streamConnect/articles/streamConnect.html)
+vignette for examples.
 
 ## Acknowledgements
 

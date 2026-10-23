@@ -1,24 +1,26 @@
 Package: streamConnect
-Version: 0.0-6
-Date: 2024-06-20
+Version: 0.1.0
+Date: 2026-10-22
 Encoding: UTF-8
 Title: Connecting Stream Mining Components Using Sockets and Web
         Services
 Authors@R: c(person("Michael", "Hahsler", role = c("aut", "cre", "cph"),
 	    email = "mhahsler@lyle.smu.edu",
 	    comment = c(ORCID = "0000-0003-2716-1405")))
-Description: Adds functionality to connect stream mining components from package stream using sockets and Web services. The package can be used create distributed workflows and create plumber-based Web services which can be deployed on most common cloud services. 
+Description: Adds functionality to connect stream mining components from the stream package using sockets and Web services. The package can be used to create distributed workflows and plumber-based Web services that can be deployed on most common cloud services.
 Depends: stream (>= 2.0-0)
 Imports: plumber, callr, httr, readr, stringr, jsonlite
-Suggests: knitr, httpuv, processx, rmarkdown
-BugReports: https://github.com/mhahsler/streamConnect
+Suggests: knitr, httpuv, processx, rmarkdown, testthat (>= 3.0.0), covr
+BugReports: https://github.com/mhahsler/streamConnect/issues
 License: GPL-3
 VignetteBuilder: knitr
-RoxygenNote: 7.3.1
+Config/testthat/edition: 3
+URL: https://michael.hahsler.net/streamConnect/
+Config/roxygen2/version: 8.1.1
 NeedsCompilation: no
-Packaged: 2024-06-20 15:21:43 UTC; hahsler
-Author: Michael Hahsler [aut, cre, cph]
-    (<https://orcid.org/0000-0003-2716-1405>)
+Packaged: 2026-10-23 00:10:48 UTC; mhahsler
+Author: Michael Hahsler [aut, cre, cph] (ORCID:
+    <https://orcid.org/0000-0003-2716-1405>)
 Maintainer: Michael Hahsler <mhahsler@lyle.smu.edu>
 Repository: CRAN
-Date/Publication: 2024-06-20 15:40:02 UTC
+Date/Publication: 2026-10-23 09:10:03 UTC
